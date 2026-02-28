@@ -22,12 +22,16 @@ class TypedRPCCore{
     public handler:TypedRPCHandler;
 
     constructor(config:TypedRPCCoreConfig){
-        const defaultConfig:TypedRPCCoreConfig = {
-            connection:{
-                provider:new TypedRPCConnectionProviderDefault(),
-            }
-        }
+        const defaultConfig:TypedRPCCoreConfig = {}
         this.config = {...defaultConfig,...config};
+
+        if(!this.config.connection?.provider && !this.config.connection?.providerGetter){
+            if(!this.config.connection){
+                this.config.connection = {}
+            }
+            this.config.connection.provider = new TypedRPCConnectionProviderDefault();
+        }
+
         this.handler = new TypedRPCHandler();
         this.init();
     }

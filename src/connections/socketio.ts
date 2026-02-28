@@ -31,25 +31,25 @@ class TypedRPCConnectionSocketIO extends TypedRPCConnection{
         // 处理外部请求
         this.msgEmitter.on('receive',(data) => {
             // console.log(`[${this.socket.id}][R]:${data}`);
-            const recivePlayload:TypedRPCConnectionSocketIOPayload = JSON.parse(data);
-            if(recivePlayload.type == 'request'
-            && recivePlayload.id
+            const recivePayload:TypedRPCConnectionSocketIOPayload = JSON.parse(data);
+            if(recivePayload.type == 'request'
+            && recivePayload.id
             ){
                 this.emitter.emit('request',{// 告知TypedRPCHandler有新请求
-                    data:recivePlayload.data,
+                    data:recivePayload.data,
                     response:(data) => {
-                        const sendPlayout:TypedRPCConnectionSocketIOPayload = {
+                        const sendPayload:TypedRPCConnectionSocketIOPayload = {
                             type:'response',
-                            id:recivePlayload.id,
+                            id:recivePayload.id,
                             data:data,
                         }
-                        this.socket.send(JSON.stringify(sendPlayout));
+                        this.socket.send(JSON.stringify(sendPayload));
                     }
                 })
-            }else if(recivePlayload.type == 'response'
-            && recivePlayload.id
+            }else if(recivePayload.type == 'response'
+            && recivePayload.id
             ){
-                this.requests.get(recivePlayload.id)?.resolve(recivePlayload.data);
+                this.requests.get(recivePayload.id)?.resolve(recivePayload.data);
             }
         })
     }
