@@ -1,12 +1,12 @@
-import type { TestCase } from './test/TestCase.js';
+import type { TestCase } from './TestCase.js';
 
 const testList = [
-    import('./test/basic.js'),
-    import('./test/context.js'),
-    import('./test/socketio.js'),
-    import('./test/authorization.js'),
-    import('./test/expressmix.js'),
-    import('./test/socket.js'),
+    import('./basic.js'),
+    import('./context.js'),
+    import('./socketio.js'),
+    import('./authorization.js'),
+    import('./expressmix.js'),
+    import('./socket.js'),
 ]
 
 async function main() {
