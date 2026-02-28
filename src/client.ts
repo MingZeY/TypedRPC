@@ -1,5 +1,5 @@
 import { TypedRPCAPI } from "./api.js";
-import type { TypedRPCConnection, TypedRPCConnectionProvider } from "./connecitons/basic.js";
+import type { TypedRPCConnection, TypedRPCConnectionProvider } from "./connections/basic.js";
 import { TypedRPCConnectionProviderDefault } from "./connection.js";
 import { TypedRPCCore } from "./core.js";
 import { TypedRPCAPIDefine } from "./define.js";

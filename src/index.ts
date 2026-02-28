@@ -5,11 +5,11 @@ import { TypedRPCConnectionDefault, TypedRPCConnectionProviderDefault } from './
 import { TypedRPCHandlerMiddleware } from './handler.js';
 import { TypedRPCPacketFactory } from './packet.js';
 import { TypedRPCContextSymbol, type TypedRPCContext, type TypedRPCContextAware } from './context.js';
-import { TypedRPCConnection, TypedRPCConnectionProvider } from './connecitons/basic.js';
-import { TypedRPCConnectionHTTP, TypedRPCConnectionProviderHTTP } from './connecitons/http.js';
-import { TypedRPCConnectionProviderSocket, TypedRPCConnectionSocket } from './connecitons/socket.js';
-import { TypedRPCConnectionSocketIO } from './connecitons/socketio.js';
-import { TypedRPCConnectionProviderSocketIO } from './connecitons/socketio.js';
+import { TypedRPCConnection, TypedRPCConnectionProvider } from './connections/basic.js';
+import { TypedRPCConnectionHTTP, TypedRPCConnectionProviderHTTP } from './connections/http.js';
+import { TypedRPCConnectionProviderSocket, TypedRPCConnectionSocket } from './connections/socket.js';
+import { TypedRPCConnectionSocketIO } from './connections/socketio.js';
+import { TypedRPCConnectionProviderSocketIO } from './connections/socketio.js';
 
 export type {
     TypedRPCContext,

@@ -1,4 +1,4 @@
-import type { TypedRPCConnection, TypedRPCConnectionProvider } from "./connecitons/basic.js"
+import type { TypedRPCConnection, TypedRPCConnectionProvider } from "./connections/basic.js"
 import { TypedRPCConnectionProviderDefault } from "./connection.js"
 import { TypedRPCHandler } from "./handler.js"
 import { TypedRPCPacketFactory, type TypedRPCRequestPacket, type TypedRPCResponsePacket } from "./packet.js"
@@ -6,7 +6,8 @@ import { TypedEmitter } from "./utils.js"
 
 type TypedRPCCoreConfig = {
     connection?:{
-        provider:TypedRPCConnectionProvider,
+        provider?:TypedRPCConnectionProvider,
+        providerGetter?:() => TypedRPCConnectionProvider,
     }
 }
 
@@ -31,13 +32,19 @@ class TypedRPCCore{
         this.init();
     }
 
+    private getProvider(){
+        const providerGetter = this.config.connection?.providerGetter ?? (() => this.config.connection?.provider);
+        return providerGetter();
+    }
+
     private init(){
-        const provider = this.config.connection?.provider;
-        if(provider){
-            provider.emitter.on('connection',(connection) => {
-                this.emitter.emit('connection',connection);
-            })
+        const provider = this.getProvider();
+        if(!provider){
+            throw new Error('No connection provider found.');
         }
+        provider.emitter.on('connection',(connection) => {
+            this.emitter.emit('connection',connection);
+        })
         this.emitter.on('connection',(connection) => {
             // 提供对向请求处理
             connection.emitter.on('request',(context) => {
@@ -99,7 +106,7 @@ class TypedRPCCore{
         port:number,
         hostname?:string,
     }):Promise<boolean>{
-        const provider = this.config.connection?.provider;
+        const provider = this.getProvider();
         if(!provider){
             throw new Error("Connection provider not found");
         }
@@ -107,7 +114,7 @@ class TypedRPCCore{
     }
 
     public async close():Promise<boolean>{
-        const provider = this.config.connection?.provider;
+        const provider = this.getProvider();
         if(!provider){
             throw new Error("Connection provider not found");
         }
@@ -115,7 +122,7 @@ class TypedRPCCore{
     }
 
     public async connect(target: string):Promise<TypedRPCConnection>{
-        const provider = this.config.connection?.provider;
+        const provider = this.getProvider();
         if(!provider){
             throw new Error("Connection provider not found");
         }
@@ -123,6 +130,10 @@ class TypedRPCCore{
         return connection;
     }
 
+}
+
+export type {
+    TypedRPCCoreConfig,
 }
 
 export {

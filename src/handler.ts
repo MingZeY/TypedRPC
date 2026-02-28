@@ -1,5 +1,5 @@
 
-import type { TypedRPCConnection } from "./connecitons/basic.js";
+import type { TypedRPCConnection } from "./connections/basic.js";
 import { TypedRPCContextSymbol, type TypedRPCContext } from "./context.js";
 import { TypedRPCPacketFactory, type TypedRPCPacket, type TypedRPCRequestPacket, type TypedRPCResponsePacket } from "./packet.js";
 import { TypedEmitter } from "./utils.js";

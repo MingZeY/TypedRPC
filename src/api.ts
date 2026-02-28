@@ -1,9 +1,9 @@
-import type { TypedRPCAPIDefine } from "./define.js";
+import type { TypedRPCAPIDefine, TypedRPCAPIDefineType } from "./define.js";
 import type { TypedRPCRequestPacket, TypedRPCResponsePacket } from "./packet.js";
 import type { TypedRPCDefineToTypedRPCAPI } from "./utils.js";
 
 
-class TypedRPCAPI<T extends TypedRPCAPIDefine<any>>{
+class TypedRPCAPI<T extends TypedRPCAPIDefine<TypedRPCAPIDefineType>>{
     constructor(){
         
     }

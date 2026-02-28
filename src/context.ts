@@ -1,4 +1,4 @@
-import type { TypedRPCConnection } from "./connecitons/basic.js";
+import type { TypedRPCConnection } from "./connections/basic.js";
 import type { TypedRPCPacket } from "./packet.js"
 
 type TypedRPCContext = {

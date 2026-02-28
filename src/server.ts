@@ -1,23 +1,21 @@
 
 import { TypedRPCAPI } from "./api.js";
-import type { TypedRPCConnection, TypedRPCConnectionProvider } from "./connecitons/basic.js";
-import { TypedRPCCore } from "./core.js";
-import { TypedRPCAPIDefine } from "./define.js";
+import type { TypedRPCConnection } from "./connections/basic.js";
+import { TypedRPCCore, type TypedRPCCoreConfig } from "./core.js";
+import { TypedRPCAPIDefine, type TypedRPCAPIDefineType } from "./define.js";
 import { TypedEmitter, type TypedRPCDefineMethodBody, type TypedRPCDefineMethodName, type TypedRPCDefineServiceInstance, type TypedRPCDefineServiceName, type TypedRPCDefineToTypedRPCAPI } from "./utils.js";
 
-type TypedRPCServerConfig<T extends TypedRPCAPIDefine<any>,R extends TypedRPCAPIDefine<any>> = {
+type TypedRPCServerConfig<T extends TypedRPCAPIDefine<TypedRPCAPIDefineType>,R extends TypedRPCAPIDefine<TypedRPCAPIDefineType>> = {
     local?:T,
     remote?:R,
-    connection?:{
-        provider:TypedRPCConnectionProvider,
-    }
+    connection?:TypedRPCCoreConfig['connection']
 }
 
 type TypedRPCServerEvents = {
     connection:(connection:TypedRPCConnection)=>void,
 }
 
-class TypedRPCServer<T extends TypedRPCAPIDefine<any>,R extends TypedRPCAPIDefine<any>> {
+class TypedRPCServer<T extends TypedRPCAPIDefine<TypedRPCAPIDefineType>,R extends TypedRPCAPIDefine<TypedRPCAPIDefineType>> {
 
     public emitter = new TypedEmitter<TypedRPCServerEvents>();
     private config:TypedRPCServerConfig<T,R>;
@@ -28,7 +26,9 @@ class TypedRPCServer<T extends TypedRPCAPIDefine<any>,R extends TypedRPCAPIDefin
             
         }
         this.config = {...defaultConfig,...config};
-        this.core = new TypedRPCCore(this.config);
+        this.core = new TypedRPCCore({
+            connection:this.config.connection ?? {},
+        });
         this.core.emitter.on('connection',(connection) => {
             this.emitter.emit('connection',connection);
         })

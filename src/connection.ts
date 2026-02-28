@@ -1,4 +1,4 @@
-import { TypedRPCConnectionHTTP, TypedRPCConnectionProviderHTTP } from "./connecitons/http.js";
+import { TypedRPCConnectionHTTP, TypedRPCConnectionProviderHTTP } from "./connections/http.js";
 
 
 const TypedRPCConnectionDefault = TypedRPCConnectionHTTP;
