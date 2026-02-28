@@ -187,7 +187,7 @@ class TypedRPCHandler{
         if(!this.hooks[serviceName]){
             this.hooks[serviceName] = {};
         }
-        this.hooks[serviceName][methodName] = {
+        this.hooks[serviceName]![methodName] = {
             handler:config.handler,
             bind:config.bind,
         };
