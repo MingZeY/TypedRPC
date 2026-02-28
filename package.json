@@ -1,0 +1,27 @@
+{
+  "name": "typedrpc",
+  "version": "1.0.0",
+  "description": "TypeScript-based RPC framework with support for multiple connection types including HTTP, Socket, and SocketIO or custom",
+  "author": "MingZeY",
+  "keywords": [
+    "rpc","typescript"
+  ],
+  "license":"MIT",
+  "files": [
+    "dist/**/*"
+  ],
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "tsx src/test.ts",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "tsx": "^4.21.0"
+  }
+}
