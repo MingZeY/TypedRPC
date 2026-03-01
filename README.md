@@ -31,7 +31,9 @@ const ServerAPIDefine = new TypedRPCAPIDefine<{
       // Method layer - Define your methods here
         add(a:number,b:number):number,
     },
-}>();
+}>({
+    timeout:10 * 1000
+});
 
 // Create server instance
 const server = new TypedRPCServer({
