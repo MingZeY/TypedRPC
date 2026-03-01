@@ -1,5 +1,5 @@
 import { TestCase } from "./TestCase.js";
-import { TypedRPCAPIDefine, TypedRPCClient, TypedRPCConnectionProviderSocket, TypedRPCServer } from "../index.js";
+import { TypedRPCAPIDefine, TypedRPCClient, TypedRPCConnectionProviderSocket, TypedRPCServer } from "../src/index.js";
 
 const ServerAPIDefine = new TypedRPCAPIDefine<{
     math: {

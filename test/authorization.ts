@@ -1,9 +1,9 @@
-import { TypedRPCClient } from "../index.js";
-import type { TypedRPCContext } from "../index.js";
-import { TypedRPCAPIDefine } from "../index.js";
-import { TypedRPCHandlerMiddleware } from "../index.js";
-import { TypedRPCPacketFactory } from "../index.js";
-import { TypedRPCServer } from "../index.js";
+import { TypedRPCClient } from "../src/index.js";
+import type { TypedRPCContext } from "../src/index.js";
+import { TypedRPCAPIDefine } from "../src/index.js";
+import { TypedRPCHandlerMiddleware } from "../src/index.js";
+import { TypedRPCPacketFactory } from "../src/index.js";
+import { TypedRPCServer } from "../src/index.js";
 import { TestCase } from "./TestCase.js";
 
 interface MathServiceInterface{

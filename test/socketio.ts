@@ -4,9 +4,9 @@
  * 这里使用socket.io作为Provider的底层通讯
  */
 import { TestCase } from "./TestCase.js";
-import { TypedRPCAPIDefine, TypedRPCConnectionProviderSocketIO } from "../index.js";
-import { TypedRPCServer } from "../index.js";
-import { TypedRPCClient } from "../index.js";
+import { TypedRPCAPIDefine, TypedRPCConnectionProviderSocketIO } from "../src/index.js";
+import { TypedRPCServer } from "../src/index.js";
+import { TypedRPCClient } from "../src/index.js";
 
 
 

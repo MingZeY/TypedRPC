@@ -1,7 +1,7 @@
-import { TypedRPCClient } from "../index.js";
-import { TypedRPCContextSymbol, type TypedRPCContext, type TypedRPCContextAware } from "../index.js";
-import { TypedRPCAPIDefine } from "../index.js";
-import { TypedRPCServer } from "../index.js";
+import { TypedRPCClient } from "../src/index.js";
+import { TypedRPCContextSymbol, type TypedRPCContext, type TypedRPCContextAware } from "../src/index.js";
+import { TypedRPCAPIDefine } from "../src/index.js";
+import { TypedRPCServer } from "../src/index.js";
 import { TestCase } from "./TestCase.js";
 
 interface MathServiceInterface{

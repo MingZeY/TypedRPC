@@ -1,4 +1,4 @@
-import { TypedRPCAPIDefine, TypedRPCClient, TypedRPCConnectionProviderHTTP, TypedRPCServer } from "../index.js";
+import { TypedRPCAPIDefine, TypedRPCClient, TypedRPCConnectionProviderHTTP, TypedRPCServer } from "../src/index.js";
 import http from 'http';
 import express from 'express';
 import { TestCase } from "./TestCase.js";
