@@ -49,7 +49,7 @@ class TypedRPCConnectionSocket extends TypedRPCConnection {
         })
     }
 
-    async request(data: string): Promise<string> {
+    async request(data: string,timeout?:number): Promise<string> {
         const requestId = `${this.currentId++}`;
         const payload: TypedRPCConnectionSocketPayload = {
             type: 'request',
@@ -57,17 +57,29 @@ class TypedRPCConnectionSocket extends TypedRPCConnection {
             data: data,
         }
 
-        const requestPromise = new Promise<string>((resolve) => {
+        // 超时处理
+        let cleanTimeout:Function = () => {};
+        return new Promise<string>((resolve,reject) => {
             this.requests.set(requestId, {
                 resolve: resolve
             })
 
             // 发送数据
             this.socket.send(JSON.stringify(payload));
+
+            // 超时处理
+            if(timeout){
+                const timeoutHandle = setTimeout(() => {
+                    reject(new Error(`request timeout after ${timeout}ms`));
+                }, timeout);
+                cleanTimeout = () => {
+                    clearTimeout(timeoutHandle);
+                }
+            }
         }).finally(() => {
             this.requests.delete(requestId);
+            cleanTimeout();
         })
-        return await requestPromise;
     }
     getId(): string {
         return this.socket.id;

@@ -1,35 +1,23 @@
 
 import type { TypedRPCConnection } from "./connections/basic.js";
 import { TypedRPCContextSymbol, type TypedRPCContext } from "./context.js";
+import type { TypedRPCMiddleware } from "./middleware/middleware.js";
 import { TypedRPCPacketFactory, type TypedRPCPacket, type TypedRPCRequestPacket, type TypedRPCResponsePacket } from "./packet.js";
 import { TypedEmitter } from "./utils.js";
 
 
-// interface TypedRPCHandlerMiddleware{
-//     inbound?:(context:TypedRPCContext) => Promise<TypedRPCContext>;
-//     outbound?:(context:TypedRPCContext) => Promise<TypedRPCContext>; 
-// }
-
-class TypedRPCHandlerMiddleware{
-    async inbound(context:TypedRPCContext):Promise<TypedRPCContext>{
-        return context;
-    }
-    async outbound(context:TypedRPCContext):Promise<TypedRPCContext>{
-        return context;
-    }
-}
 
 type TypedRPCHandlerEvents = {
     
 }
 /**
- * 处理所有TypedRPC数据包，管理入站出站
+ * 处理所有TypedRPC数据包，管理入站出站，并调用hook的方法
  */
 class TypedRPCHandler{
 
     public emitter = new TypedEmitter<TypedRPCHandlerEvents>();
 
-    private middlewares:TypedRPCHandlerMiddleware[] = [];
+    private middlewares:TypedRPCMiddleware[] = [];
 
     private hooks:Record<string,Record<string,{
         handler:(...args:any[])=>any,
@@ -37,9 +25,9 @@ class TypedRPCHandler{
     }>> = {};
 
     constructor(){
+        // Fallback 托底返回错误
         this.use({
             inbound:async (context) => {
-                // Fallback 托底返回错误
                 if(context.inbound && !context.outbound){
                     context.outbound = TypedRPCPacketFactory.createResponsePacket({
                         requestId:context.inbound.id,
@@ -52,13 +40,14 @@ class TypedRPCHandler{
                 return context;
             },
         })
+        // hook 调用
         this.use({
             inbound:async (context) => {
                 if(!context.inbound
                 || !TypedRPCPacketFactory.isRequestPacket(context.inbound)){
                     return context;
                 }
-                // 如果已经有出站包，直接返回
+                // 如果已经有出站包，直接返回，赋予其他中间件拦截的能力
                 if(context.outbound){
                     return context;
                 }
@@ -90,7 +79,7 @@ class TypedRPCHandler{
         })
     }
 
-    public use(middleware:TypedRPCHandlerMiddleware){
+    public use(middleware:TypedRPCMiddleware){
         this.middlewares.push(middleware);
         return this;
     }
@@ -130,16 +119,24 @@ class TypedRPCHandler{
         return this.middlewareProcesser(context,this.middlewares.length - 1,'inbound');
     }
 
-    public async request(connection:TypedRPCConnection,request:TypedRPCRequestPacket):Promise<TypedRPCPacket>{
+    /** send a request packet and return the response packet */
+    public async request(connection:TypedRPCConnection,request:TypedRPCRequestPacket,timeout?:number):Promise<TypedRPCPacket>{
+
+        // build context
         let context:TypedRPCContext = {
             connection:connection,
             outbound:request,
         }
-        context = await this.outbound(context);
+
+        context = await this.outbound(context);// outbound middleware
         if(!context.outbound){
             throw new Error("Request failed: outbound is empty");
         }
-        const res = await connection.request(JSON.stringify(context.outbound));
+
+        // send request
+        const res = await connection.request(JSON.stringify(context.outbound),timeout).catch((e) => {
+            throw e;
+        });
         if(!res){
             throw new Error("Response is empty");
         }
@@ -155,31 +152,47 @@ class TypedRPCHandler{
         if(!TypedRPCPacketFactory.isResponsePacket(responseObject)){
             throw new Error("Response is not a TypedRPCResponsePacket");
         }
+
+        // set inbound packet
         context.inbound = responseObject;
+
+        // inbound middleware
         context = await this.inbound(context);
         if(!context.inbound){
-            throw new Error("Request failed: inbound is empty");
+            throw new Error("Request failed: received inbound is empty");
         }
+
+        // return inbound packet
         return context.inbound;
     }
 
     public async handle(connection:TypedRPCConnection,request:TypedRPCRequestPacket,response:(packet:TypedRPCResponsePacket) => void){
+
+        // build context
         let context:TypedRPCContext = {
             connection:connection,
             inbound:request,
         }
+
+        // inbound middleware
         context = await this.inbound(context);
         if(!context.outbound){
-            return null
+            return;// some middleware may not generate outbound or block the outbound
         }
-        context = await this.outbound(context);
+        context = await this.outbound(context);// outbound middleware
         if(!context.outbound 
         || !TypedRPCPacketFactory.isResponsePacket(context.outbound)){
-            return null;
+            return;// nothing need to response, skip response
         }
         response(context.outbound);
     }
 
+    /**
+     * Add a hook function for the specified service method
+     * @param serviceName Service name
+     * @param methodName Method name
+     * @param config Hook function configuration
+     */
     hook(serviceName:string,methodName:string,config:{
         handler:(...args:any[])=>any,
         bind?:any,
@@ -187,10 +200,25 @@ class TypedRPCHandler{
         if(!this.hooks[serviceName]){
             this.hooks[serviceName] = {};
         }
+        if(this.hooks[serviceName]![methodName]){
+            throw new Error(`Hook function for ${serviceName}.${methodName} already exists.check if it is overwritten or use unhook to remove it first.`);
+        }
         this.hooks[serviceName]![methodName] = {
             handler:config.handler,
             bind:config.bind,
         };
+    }
+
+    /**
+     * Remove the hook function for the specified service method
+     * @param serviceName Service name
+     * @param methodName Method name
+     */
+    unhook(serviceName:string,methodName:string){
+        if(!this.hooks[serviceName]){
+            return;
+        }
+        delete this.hooks[serviceName]![methodName];
     }
 
     
@@ -198,5 +226,4 @@ class TypedRPCHandler{
 
 export {
     TypedRPCHandler,
-    TypedRPCHandlerMiddleware
 }

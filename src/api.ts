@@ -9,7 +9,9 @@ class TypedRPCAPI<T extends TypedRPCAPIDefine<TypedRPCAPIDefineType>>{
     }
 
     interface(callback:(context:{
-        serviceName:string,methodName:string,args:any[]
+        serviceName:string,
+        methodName:string,
+        args:any[]
     }) => Promise<{
         request:TypedRPCRequestPacket,
         response:TypedRPCResponsePacket,

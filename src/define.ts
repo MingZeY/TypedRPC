@@ -1,10 +1,25 @@
 
 type TypedRPCAPIDefineType = Record<string, Record<string, any>>
 
-type TypedRPCDefineConfig = {
+type TypedRPCMethodConfig = {
+    // timeout for this method
+    timeout?:number | undefined;//ms
+}
 
-    
+type TypedRPCServiceConfig<T extends TypedRPCAPIDefineType,S extends keyof T> = {
+    methods?:{
+        [M in keyof T[S]]?:TypedRPCMethodConfig;
+    }
+    // default timeout for all methods in this service
+    timeout?:number | undefined;//ms
+}
 
+type TypedRPCDefineConfig<T extends TypedRPCAPIDefineType> = {
+    services?:{
+        [S in keyof T]?:TypedRPCServiceConfig<T,S>;
+    },
+    // default timeout for all services
+    timeout?:number | undefined;
 }
 
 class TypedRPCAPIDefine<T extends TypedRPCAPIDefineType> {
@@ -13,8 +28,10 @@ class TypedRPCAPIDefine<T extends TypedRPCAPIDefineType> {
     static TypedRPCMethod = Symbol('TypedRPCMethod');
     static TypedRPCMethodList = Symbol('TypedRPCMethodList');
 
-    constructor(config?:TypedRPCAPIDefineType){
-        
+    private config:TypedRPCDefineConfig<T>;
+
+    constructor(config?:TypedRPCDefineConfig<T>){
+        this.config = config || {};
     }
 
     static method(){
@@ -51,11 +68,23 @@ class TypedRPCAPIDefine<T extends TypedRPCAPIDefineType> {
         }
         return Array.from(service[TypedRPCAPIDefine.TypedRPCMethodList]);
     }
+
+    resolveMethodConfig<S extends keyof T,M extends keyof T[S]>(service:S,methodName:M):TypedRPCMethodConfig|undefined{
+        const serviceConfig = this.config.services?.[service];
+        const methodConfig = serviceConfig?.methods?.[methodName];
+        
+        return {
+            timeout: methodConfig?.timeout || serviceConfig?.timeout || this.config.timeout,
+        }
+    }
 }
 
 
 export type {
     TypedRPCAPIDefineType,
+    TypedRPCDefineConfig,
+    TypedRPCServiceConfig,
+    TypedRPCMethodConfig,
 }
 
 export {

@@ -1,7 +1,7 @@
 import { TypedRPCClient } from "../src/index.js";
 import type { TypedRPCContext } from "../src/index.js";
 import { TypedRPCAPIDefine } from "../src/index.js";
-import { TypedRPCHandlerMiddleware } from "../src/index.js";
+import { TypedRPCMiddleware } from "../src/index.js";
 import { TypedRPCPacketFactory } from "../src/index.js";
 import { TypedRPCServer } from "../src/index.js";
 import { TestCase } from "./TestCase.js";
@@ -45,7 +45,7 @@ class AuthService implements AuthServiceInterface{
     }
 }
 
-class AuthMiddleware extends TypedRPCHandlerMiddleware{
+class AuthMiddleware extends TypedRPCMiddleware{
 
     private username?:string;
     private token?:string;

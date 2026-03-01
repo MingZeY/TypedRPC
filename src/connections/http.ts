@@ -156,11 +156,13 @@ class TypedRPCConnectionProviderHTTP extends TypedRPCConnectionProvider{
     close(): Promise<boolean> {
         return new Promise<boolean>((resolve,reject) => {
             if(!this.server){
-                return true;
+                resolve(true);
+                return;
             }
             this.server.close((err) => {
                 if(err){
                     reject(err);
+                    return;
                 }
                 resolve(true);
             })

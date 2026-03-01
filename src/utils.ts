@@ -18,6 +18,7 @@ export type TypedRPCDefineToTypedRPCAPI<T extends TypedRPCAPIDefine<any>> = T ex
                 /** 获取方法id */
                 request:(config:{
                     args:Parameters<U[S][M]>,
+                    timeout?:number,
                     callback?:(result:ReturnType<U[S][M]>,req:TypedRPCRequestPacket,res:TypedRPCResponsePacket) => void,
                     error?:(error:any,req:TypedRPCRequestPacket,res:TypedRPCResponsePacket) => void,
                 }) => string,
@@ -93,3 +94,106 @@ export class IdMaker{
         return `${timestamp}${suffix}`;
     }
 }
+
+export class PromiseTimeout<T>{
+
+  private promise:Promise<T>;
+  private reject?: (reason?: any) => void;
+  private timer?:ReturnType<typeof setTimeout>;
+  
+  constructor(
+    executor: (
+      resolve: (value: T | PromiseLike<T>) => void,
+      reject: (reason?: any) => void
+    ) => void
+  ){
+    this.promise = new Promise<T>((resolve,reject) => {
+      this.reject = reject;
+      executor(resolve,reject);
+    }).finally(() => {
+      if(this.timer){
+        clearTimeout(this.timer)
+      }
+    })
+  }
+
+  public timeout(time:number){
+    if(time <= 0){
+      clearTimeout(this.timer);
+      return this;
+    }
+    if(this.timer){
+      clearTimeout(this.timer)
+    }
+    this.timer = setTimeout(() => {
+      this.reject?.(new Error(`Promise timed out after ${time}ms`));
+    },time)
+    return this;
+  }
+
+  get catch(){
+    return this.promise.catch.bind(this.promise);
+  }
+  
+  get finally(){
+    return this.promise.finally.bind(this.promise);
+  }
+
+  get then(){
+    return this.promise.then.bind(this.promise);
+  }
+}
+
+// export class PromiseTimeout<T> extends Promise<T> {
+//   private timer: ReturnType<typeof setTimeout> | null = null;
+//   private rejectFn: ((reason?: any) => void) | null = null;
+
+//   constructor(
+//     executor: (
+//       resolve: (value: T | PromiseLike<T>) => void,
+//       reject: (reason?: any) => void
+//     ) => void
+//   ) {
+//     let internalReject: (reason?: any) => void;
+    
+//     // 调用父类构造函数
+//     super((resolve, reject) => {
+//       internalReject = reject;
+//       executor(resolve, reject);
+//     });
+
+//     this.rejectFn = internalReject!;
+//   }
+
+//   /**
+//    * 设置超时时间
+//    * @param ms 毫秒数
+//    * @returns 返回实例支持链式调用
+//    */
+//   timeout(ms: number): this {
+//     if (this.timer) {
+//       clearTimeout(this.timer);
+//     }
+
+//     this.timer = setTimeout(() => {
+//       if (this.rejectFn) {
+//         this.rejectFn(new Error(`Promise timed out after ${ms}ms`));
+//       }
+//     }, ms);
+
+//     // 无论成功或失败，都要清除定时器，防止内存泄漏
+//     this.finally(() => {
+//       if (this.timer) {
+//         clearTimeout(this.timer);
+//       }
+//     });
+
+//     return this;
+//   }
+
+//   // 必须重写 Symbol.species 以确保 then/catch 返回的是原生 Promise 
+//   // 否则链式调用可能会因为构造函数参数不匹配而报错
+//   static get [Symbol.species]() {
+//     return Promise;
+//   }
+// }

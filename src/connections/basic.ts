@@ -7,10 +7,11 @@ type TypedRPCConnectionEvents = {
         response:(data:string) => void,
     }) => void;
 }
+
 abstract class TypedRPCConnection{
     public emitter = new TypedEmitter<TypedRPCConnectionEvents>();
     /** 发起一个请求并获得返回结果 */
-    abstract request(data:string):Promise<string>;
+    abstract request(data:string,timeout?:number):Promise<string>;
     /** 获取连接的id */
     abstract getId():string;
     /** 关闭连接 */

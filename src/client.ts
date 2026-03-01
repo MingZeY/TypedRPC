@@ -62,11 +62,13 @@ class TypedRPCClient<T extends TypedRPCAPIDefine<any>,R extends TypedRPCAPIDefin
     getAPI(connection:TypedRPCConnection):TypedRPCDefineToTypedRPCAPI<R>{
         const api = new TypedRPCAPI<R>();
         return api.interface(async (context) => {
+            const methodConfig = this.config.remote?.resolveMethodConfig(context.serviceName,context.methodName);
             return await this.core.request({
                 connection,
                 serviceName:context.serviceName,
                 methodName:context.methodName,
                 args:context.args,
+                timeout:methodConfig?.timeout,
             })
         })
     }

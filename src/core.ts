@@ -2,7 +2,7 @@ import type { TypedRPCConnection, TypedRPCConnectionProvider } from "./connectio
 import { TypedRPCConnectionProviderDefault } from "./connection.js"
 import { TypedRPCHandler } from "./handler.js"
 import { TypedRPCPacketFactory, type TypedRPCRequestPacket, type TypedRPCResponsePacket } from "./packet.js"
-import { TypedEmitter } from "./utils.js"
+import { PromiseTimeout, TypedEmitter } from "./utils.js"
 
 type TypedRPCCoreConfig = {
     connection?:{
@@ -79,6 +79,7 @@ class TypedRPCCore{
         serviceName:string,
         methodName:string,
         args:any[],
+        timeout?:number | undefined,
     }):Promise<{
         request:TypedRPCRequestPacket,
         response:TypedRPCResponsePacket,
@@ -88,12 +89,17 @@ class TypedRPCCore{
             methodName:config.methodName,
             args:config.args,
         })
-        const responsePacket = await this.handler.request(config.connection,requestPacket).catch((e) => {
+
+        const responsePacket = await new PromiseTimeout(async (resolve,reject) => {
+            this.handler.request(config.connection,requestPacket,config.timeout).then(resolve).catch(reject);
+        })
+        .timeout(config.timeout || 0)
+        .catch((e) => {
             return TypedRPCPacketFactory.createResponsePacket({
                 requestId:requestPacket.id,
                 error:e
             })
-        });
+        })
         if(!TypedRPCPacketFactory.isResponsePacket(responsePacket)){
             throw new Error(`Invalid response packet:\n${JSON.stringify(responsePacket)}`);
         }

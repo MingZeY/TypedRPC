@@ -2,7 +2,7 @@ import { TypedRPCClient } from './client.js';
 import { TypedRPCServer } from './server.js';
 import { TypedRPCAPIDefine } from './define.js';
 import { TypedRPCConnectionDefault, TypedRPCConnectionProviderDefault } from './connection.js';
-import { TypedRPCHandlerMiddleware } from './handler.js';
+import { TypedRPCMiddleware } from './middleware/middleware.js';
 import { TypedRPCPacketFactory } from './packet.js';
 import { TypedRPCContextSymbol, type TypedRPCContext, type TypedRPCContextAware } from './context.js';
 import { TypedRPCConnection, TypedRPCConnectionProvider } from './connections/basic.js';
@@ -17,13 +17,17 @@ export type {
 }
 
 export {
+    /** Basic */
     TypedRPCClient,
     TypedRPCServer,
     TypedRPCAPIDefine,
-
     TypedRPCConnection,
     TypedRPCConnectionProvider,
+    TypedRPCMiddleware,
+    TypedRPCPacketFactory,
+    TypedRPCContextSymbol,
 
+    /** Connections */
     TypedRPCConnectionDefault,
     TypedRPCConnectionProviderDefault,
     TypedRPCConnectionHTTP,
@@ -32,10 +36,4 @@ export {
     TypedRPCConnectionProviderSocket,
     TypedRPCConnectionSocketIO,
     TypedRPCConnectionProviderSocketIO,
-
-
-    TypedRPCHandlerMiddleware,
-    TypedRPCPacketFactory,
-
-    TypedRPCContextSymbol,
 }
