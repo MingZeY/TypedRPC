@@ -111,7 +111,7 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
         }
         const socketIOServerModule = await import("socket.io").catch(() => null);
         if(!socketIOServerModule){
-            throw new Error("socket.io module not found");
+            throw new Error("socket.io module not found, try to use npm install socket.io");
         }
 
         const server = httpModule.createServer();
@@ -173,7 +173,7 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
     async connect(target: string): Promise<TypedRPCConnection> {
         const SocketIOClientModule = await import("socket.io-client").catch(() => null);
         if(!SocketIOClientModule){
-            throw new Error("socket.io-client module not found");
+            throw new Error("socket.io-client module not found,try to use npm install socket.io-client");
         }
         return new Promise<TypedRPCConnection>((resolve,reject) => {
             const socket = SocketIOClientModule.io(`ws://${target}`);
