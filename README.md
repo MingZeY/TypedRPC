@@ -9,12 +9,15 @@ TypeScript-based RPC framework with support for multiple connection types includ
 
 ## Features
 
-- **Type-Safe RPC calls** - Leverage TypeScript's type system for end-to-end type safety
-- **Multiple connection types** - Support for HTTP, Socket, and SocketIO connections, or custom connection providers
-- **Middleware support** - Extensible middleware system for request/response handling
-- **Context-aware** - Built-in context system for passing data between handlers
-- **Bidirectional communication** - Support for two-way RPC calls between client and server, capability depends on connection type
-- **Easy to use** - Simple API for defining services and methods
+- 🛡️ **Type-Safe RPC calls** - Leverage TypeScript's type system for end-to-end type safety
+- 🔌 **Multiple connection types** - Support for HTTP, Socket, and SocketIO connections, or custom connection providers
+- 🔄 **Middleware support** - Extensible middleware system for request/response handling
+- 📝 **Context-aware** - Built-in context system for passing data between handlers
+- 🔁 **Bidirectional communication** - Support for two-way RPC calls between client and server, capability depends on connection type
+- 📦 **Easy to use** - Simple API for defining services and methods
+- 🚀 **Zero dependencies** - No external library dependencies, only depends on TypeScript standard library
+- 🌐 **Frontend and backend compatible** - Can be used in Node.js backend and browser frontend
+- 📈 **High extensibility** - Can be easily integrated into frameworks like Electron, Express as an RPC solution
 
 ## Installation
 
