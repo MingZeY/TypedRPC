@@ -19,7 +19,7 @@ TypeScript-based RPC framework with support for multiple connection types includ
 ## Installation
 
 ```bash
-npm install typedrpc
+npm install @mingzey/typedrpc
 ```
 
 ## Basic Usage

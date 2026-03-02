@@ -20,7 +20,7 @@
 ## 安装
 
 ```bash
-npm install typedrpc
+npm install @mingzey/typedrpc
 ```
 
 ## 基本使用
