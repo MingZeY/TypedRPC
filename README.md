@@ -1,6 +1,11 @@
+[English](./README.md) / [中文](./README.zh-CN.md)
 # TypedRPC
 
 TypeScript-based RPC framework with support for multiple connection types including HTTP, Socket, and SocketIO.
+
+## Repository
+
+[Github](https://github.com/MingZeY/TypedRPC)
 
 ## Features
 
@@ -22,13 +27,13 @@ npm install typedrpc
 ### Server Setup
 
 ```typescript
-import { TypedRPCServer, TypedRPCAPIDefine } from 'typedrpc';
+import { TypedRPCServer, TypedRPCAPIDefine } from '@mingzey/typedrpc';
 
 // Define your API interface
 const ServerAPIDefine = new TypedRPCAPIDefine<{
-  // Service layer - Define your services here or use interface inheritance
+    // Service layer - Define your services here or use interface inheritance
     math:{
-      // Method layer - Define your methods here
+        // Method layer - Define your methods here
         add(a:number,b:number):number,
     },
 }>({
@@ -47,7 +52,7 @@ const server = new TypedRPCServer({
 
 // Hook service methods
 server.hook('math','add',{
-    handler:(a,b)=>a+b,
+    handler: (a,b) => a+b,
 });
 
 // Start listening
@@ -59,7 +64,7 @@ server.listen({
 ### Client Setup
 
 ```typescript
-import { TypedRPCClient, TypedRPCAPIDefine } from 'typedrpc';
+import { TypedRPCClient, TypedRPCAPIDefine } from '@mingzey/typedrpc';
 // Reuse or import the same API definition
 const ServerAPIDefine = new TypedRPCAPIDefine<{
   math:{
@@ -97,9 +102,11 @@ new TypedRPCServer({
     local:ServerAPIDefine,
     connection:{
         provider:new TypedRPCConnectionProviderHTTP(),
+        // or use socket connection
         // provider:new TypedRPCConnectionProviderSocket(),
+        // or use socketio connection
         // provider:new TypedRPCConnectionProviderSocketIO(),
-        // provider:implaement your own connection provider
+        // or implaement your own connection provider
     }
 })
 ```
@@ -127,7 +134,7 @@ new TypedRPCServer({
 TypedRPC supports middleware for both servers and clients:
 
 ```typescript
-class MyMiddleware extends TypedRPCHandlerMiddleware{
+class MyMiddleware extends TypedRPCMiddleware{
 
     async inbound(context: TypedRPCContext): Promise<TypedRPCContext> {
       // Do something when inbound packet
@@ -150,7 +157,7 @@ TypedRPC provides a built-in context system that allows you to access request co
 
 ```typescript
 // Server-side code
-import { TypedRPCServer, TypedRPCAPIDefine, TypedRPCContextSymbol, type TypedRPCContext, type TypedRPCContextAware } from 'typedrpc';
+import { TypedRPCServer, TypedRPCAPIDefine, TypedRPCContextSymbol, type TypedRPCContext, type TypedRPCContextAware } from '@mingzey/typedrpc';
 
 // Define service interface
 interface MathServiceInterface {
@@ -172,7 +179,10 @@ class MathService implements MathServiceInterface, TypedRPCContextAware {
     // Inject context using TypedRPCContextSymbol
     [TypedRPCContextSymbol]: TypedRPCContext | null = null;
 
-    // For safety, must use @TypedRPCAPIDefine.method() to mark method as RPC method in service usage
+    /**
+     * For safety, must use @TypedRPCAPIDefine.method() to mark method as RPC method in service usage
+     * You need set experimentalDecorators:true in tsconfig.json
+     */
     @TypedRPCAPIDefine.method()
     add(a: number, b: number): number {
         // Access context
@@ -227,4 +237,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see the [LICENSE](https://github.com/TypedRPC/TypedRPC/blob/main/LICENSE) file for details.
+MIT License - see the [LICENSE](https://github.com/MingZeY/TypedRPC/blob/master/LICENSE) file for details.
