@@ -142,6 +142,7 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
                 origin:"*",
                 methods:["GET","POST"],
             },
+            ...this.config.options,
         });
         io.on('connection',(socket) => {
             const connection = new TypedRPCConnectionSocketIO({
