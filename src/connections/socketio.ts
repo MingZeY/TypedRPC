@@ -100,21 +100,41 @@ class TypedRPCConnectionSocketIO extends TypedRPCConnection{
     
 }
 
+
+type TypedRPCConnectionProviderSocketIOConfig = {
+    server?:import('http').Server,
+    options?:Partial<import('socket.io').ServerOptions>
+}
+
 class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
     
     private io:import("socket.io").Server | null = null;
+    private config:TypedRPCConnectionProviderSocketIOConfig;
+
+    constructor(config?:TypedRPCConnectionProviderSocketIOConfig){
+        super();
+        this.config = config || {};
+    }
 
     async listen(config: { port: number; hostname?: string; }): Promise<boolean> {
-        const httpModule = await import("http").catch(() => null);
-        if(!httpModule){
-            throw new Error("http module not found");
-        }
+        
         const socketIOServerModule = await import("socket.io").catch(() => null);
         if(!socketIOServerModule){
             throw new Error("socket.io module not found, try to use npm install socket.io");
         }
 
-        const server = httpModule.createServer();
+        const server = await new Promise<import("http").Server>(async (resolve,reject) => {
+            if(this.config.server){
+                resolve(this.config.server);
+            }else{
+                const httpModule = await import("http").catch(() => null);
+                if(!httpModule){
+                    reject(new Error("http module not found"));
+                    return;
+                }
+                resolve(httpModule.createServer());
+            }
+        })
 
 
         const io = new socketIOServerModule.Server(server,{
@@ -170,13 +190,13 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
         })
     }
 
-    async connect(target: string): Promise<TypedRPCConnection> {
+    async connect(target: string,path?:string): Promise<TypedRPCConnection> {
         const SocketIOClientModule = await import("socket.io-client").catch(() => null);
         if(!SocketIOClientModule){
             throw new Error("socket.io-client module not found,try to use npm install socket.io-client");
         }
         return new Promise<TypedRPCConnection>((resolve,reject) => {
-            const socket = SocketIOClientModule.io(`ws://${target}`);
+            const socket = SocketIOClientModule.io(`ws://${target}${path}`);
             const connection = new TypedRPCConnectionSocketIO({
                 id:socket.id || IdMaker.makeId(),
                 send:(data) => {
