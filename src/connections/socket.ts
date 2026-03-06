@@ -1,5 +1,8 @@
+import { importTyped, type TypedImportLib } from '../typedimport/default.js';
 import { IdMaker, TypedEmitter } from '../utils.js';
 import { TypedRPCConnection, TypedRPCConnectionProvider } from './basic.js';
+
+
 
 type TypedRPCConnectionSocketPayload = {
     type: 'request' | 'response',
@@ -95,11 +98,12 @@ class TypedRPCConnectionSocket extends TypedRPCConnection {
 
 class TypedRPCConnectionProviderSocket extends TypedRPCConnectionProvider {
 
-    private server: import('net').Server | undefined;
-    private sockets: Set<import('net').Socket> = new Set();
+    private server: InstanceType<TypedImportLib['net']['Server']> | undefined;
+    private sockets: Set<InstanceType<TypedImportLib['net']['Socket']>> = new Set();
 
     async listen(config: { port: number; hostname?: string; }): Promise<boolean> {
-        const net = await import('net').catch(() => null);
+        // const net = await import('net').catch(() => null);
+        const net = await importTyped('net').catch(() => null);
         if(!net){
             throw new Error("net module not found");
         }
@@ -186,7 +190,8 @@ class TypedRPCConnectionProviderSocket extends TypedRPCConnectionProvider {
 
     connect(target: string): Promise<TypedRPCConnection> {
         return new Promise<TypedRPCConnection>(async (resolve, reject) => {
-            const net = await import('net').catch(() => null);
+            // const net = await import('net').catch(() => null);
+            const net = await importTyped('net').catch(() => null);
             if(!net){
                 reject(new Error("net module not found"));
                 return;

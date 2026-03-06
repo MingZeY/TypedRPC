@@ -1,4 +1,5 @@
 
+import { importTyped, type TypedImport_http } from "../typedimport/default.js";
 import { IdMaker } from "../utils.js";
 import { TypedRPCConnection, TypedRPCConnectionProvider } from "./basic.js";
 
@@ -57,7 +58,8 @@ class TypedRPCConnectionHTTP extends TypedRPCConnection{
     
 }
 
-type TypedRPCConnectionProviderHTTPServer = import('http').Server;
+
+type TypedRPCConnectionProviderHTTPServer = InstanceType<TypedImport_http['Server']>;
 
 type TypedRPCConnectionProviderHTTPConfig = {
     server?:TypedRPCConnectionProviderHTTPServer,
@@ -122,8 +124,9 @@ class TypedRPCConnectionProviderHTTP extends TypedRPCConnectionProvider{
         })
     }
 
+
     private async createServer():Promise<TypedRPCConnectionProviderHTTPServer>{
-        const httpSupport = await import("http").catch(() => null);
+        const httpSupport = await importTyped("http").catch(() => null);
         if(!httpSupport){
             throw new Error("http module not found");
         }

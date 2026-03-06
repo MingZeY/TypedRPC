@@ -1,3 +1,4 @@
+import { importTyped, type TypedImportLib } from "../typedimport/default.js";
 import { IdMaker, TypedEmitter } from "../utils.js";
 import { TypedRPCConnection, TypedRPCConnectionProvider } from "./basic.js";
 
@@ -102,11 +103,11 @@ class TypedRPCConnectionSocketIO extends TypedRPCConnection{
 
 type TypedRPCConnectionSocketIOConfig = {
     type:"client"|"server",
-    server?:ReturnType<typeof import("http").createServer> | undefined;
-    io?:import("socket.io").Server | undefined;
+    server?:InstanceType<TypedImportLib['http']['Server']> | undefined;
+    io?:InstanceType<TypedImportLib['socket.io']['Server']> | undefined;
     options?:{
-        server?:Partial<import("socket.io").ServerOptions> | undefined,
-        client?:Partial<import("socket.io-client").ManagerOptions & import("socket.io-client").SocketOptions> | undefined
+        server?:Partial<TypedImportLib['socket.io']['ServerOptions']> | undefined,
+        client?:Partial<TypedImportLib['socket.io-client']['ManagerOptions'] & TypedImportLib['socket.io-client']['SocketOptions']> | undefined
     }
 }
 
@@ -116,9 +117,9 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
     private config:Promise<TypedRPCConnectionSocketIOConfig>;
 
     static createServer(config?:{
-        server?:ReturnType<typeof import("http").createServer>,
-        io?:import("socket.io").Server,
-        options?:Partial<import("socket.io").ServerOptions>,
+        server?:InstanceType<TypedImportLib['http']['Server']>,
+        io?:InstanceType<TypedImportLib['socket.io']['Server']>,
+        options?:Partial<TypedImportLib['socket.io']['ServerOptions']>,
     }){
         return new TypedRPCConnectionProviderSocketIO({
             type:'server',
@@ -131,7 +132,7 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
     }
 
     static createClient(config?:{
-        options?:Partial<import("socket.io-client").ManagerOptions & import("socket.io-client").SocketOptions>,
+        options?:Partial<TypedImportLib['socket.io-client']['ManagerOptions'] & TypedImportLib['socket.io-client']['SocketOptions']>,
     }){
         return new TypedRPCConnectionProviderSocketIO({
             type:'client',
@@ -166,16 +167,18 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
         }
 
         if(!config.server){
-            config.server = await import("http").then((httpModule) => {
-                return httpModule.createServer();
-            })
+            const httpSupport = await importTyped("http").catch(() => null);
+            if(!httpSupport){
+                throw new Error("http module not found");
+            }
+            config.server = httpSupport.default.createServer();
             if(!config.server){
                 throw new Error("http server not found");
             }
         }
 
         if(!config.io){
-            config.io = await import('socket.io').then((socketIOServerModule) => {
+            config.io = await importTyped('socket.io').then((socketIOServerModule) => {
                 return new socketIOServerModule.Server(config.server,{
                     cors:{
                         origin:"*",
@@ -204,7 +207,7 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
                 },
             });
             this.emitter.emit('connection',connection);// 告知TypedRPCHandler有新连接
-            socket.on('message',(data) => {
+            socket.on('message',(data:string) => {
                 connection.msgEmitter.emit('receive',data);
             })
             socket.on('close',() => {
@@ -254,7 +257,8 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
     }
 
     async connect(target: string): Promise<TypedRPCConnection> {
-        const SocketIOClientModule = await import("socket.io-client").catch(() => null);
+        // const SocketIOClientModule = await import("socket.io-client").catch(() => null);
+        const SocketIOClientModule = await importTyped("socket.io-client").catch(() => null);
         if(!SocketIOClientModule){
             throw new Error("socket.io-client module not found,try to use npm install socket.io-client");
         }
