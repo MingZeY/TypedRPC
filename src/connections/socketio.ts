@@ -100,51 +100,96 @@ class TypedRPCConnectionSocketIO extends TypedRPCConnection{
     
 }
 
-
-type TypedRPCConnectionProviderSocketIOConfig = {
-    server?:import('http').Server,
-    options?:Partial<import('socket.io').ServerOptions>
+type TypedRPCConnectionSocketIOConfig = {
+    type:"client"|"server",
+    server?:ReturnType<typeof import("http").createServer> | undefined;
+    io?:import("socket.io").Server | undefined;
+    options?:{
+        server?:Partial<import("socket.io").ServerOptions> | undefined,
+        client?:Partial<import("socket.io-client").ManagerOptions & import("socket.io-client").SocketOptions> | undefined
+    }
 }
 
 class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
-    
-    private io:import("socket.io").Server | null = null;
-    private config:TypedRPCConnectionProviderSocketIOConfig;
 
-    constructor(config?:TypedRPCConnectionProviderSocketIOConfig){
-        super();
-        this.config = config || {};
-    }
+    private closed = false;
+    private config:Promise<TypedRPCConnectionSocketIOConfig>;
 
-    async listen(config: { port: number; hostname?: string; }): Promise<boolean> {
-        
-        const socketIOServerModule = await import("socket.io").catch(() => null);
-        if(!socketIOServerModule){
-            throw new Error("socket.io module not found, try to use npm install socket.io");
-        }
-
-        const server = await new Promise<import("http").Server>(async (resolve,reject) => {
-            if(this.config.server){
-                resolve(this.config.server);
-            }else{
-                const httpModule = await import("http").catch(() => null);
-                if(!httpModule){
-                    reject(new Error("http module not found"));
-                    return;
-                }
-                resolve(httpModule.createServer());
+    static createServer(config?:{
+        server?:ReturnType<typeof import("http").createServer>,
+        io?:import("socket.io").Server,
+        options?:Partial<import("socket.io").ServerOptions>,
+    }){
+        return new TypedRPCConnectionProviderSocketIO({
+            type:'server',
+            server:config?.server,
+            io:config?.io,
+            options:{
+                server:config?.options,
             }
         })
+    }
 
+    static createClient(config?:{
+        options?:Partial<import("socket.io-client").ManagerOptions & import("socket.io-client").SocketOptions>,
+    }){
+        return new TypedRPCConnectionProviderSocketIO({
+            type:'client',
+            options:{
+                client:config?.options,
+            }
+        })
+    }
+    
+    constructor(config:TypedRPCConnectionSocketIOConfig){
+        super();
+        if(config.type == 'server'){
+            this.config = this.buildServer(config);
+        }else if(config.type == 'client'){
+            this.config = this.buildClient(config);
+        }else{
+            throw new Error('TypedRPCConnectionProviderSocketIO constructor only support server or client type.');
+        }
+    }
 
-        const io = new socketIOServerModule.Server(server,{
-            cors:{
-                origin:"*",
-                methods:["GET","POST"],
-            },
-            ...this.config.options,
-        });
-        io.on('connection',(socket) => {
+    private async buildClient(config:TypedRPCConnectionSocketIOConfig):Promise<TypedRPCConnectionSocketIOConfig>{
+        if(config.type != 'client'){
+            throw new Error('TypedRPCConnectionProviderSocketIO buildClient only support client type.');
+        }
+        return config;
+    }
+    
+
+    private async buildServer(config:TypedRPCConnectionSocketIOConfig):Promise<TypedRPCConnectionSocketIOConfig>{
+        if(config.type != 'server'){
+            throw new Error('TypedRPCConnectionProviderSocketIO buildServer only support server type.');
+        }
+
+        if(!config.server){
+            config.server = await import("http").then((httpModule) => {
+                return httpModule.createServer();
+            })
+            if(!config.server){
+                throw new Error("http server not found");
+            }
+        }
+
+        if(!config.io){
+            config.io = await import('socket.io').then((socketIOServerModule) => {
+                return new socketIOServerModule.Server(config.server,{
+                    cors:{
+                        origin:"*",
+                        methods:["GET","POST"],
+                    },
+                    ...config.options?.server,
+                });
+            })
+            if(!config.io){
+                throw new Error("socket.io server not found");
+            }
+        }
+
+        config.io.on('connection',(socket) => {
             const connection = new TypedRPCConnectionSocketIO({
                 id:socket.id,
                 send:(data) => {
@@ -166,38 +211,57 @@ class TypedRPCConnectionProviderSocketIO extends TypedRPCConnectionProvider{
                 connection.close();
             })
         })
-        this.io = io;
+
+        return config;
+    }
+
+
+    async listen(params: { port: number; hostname?: string; }): Promise<boolean> {
+        const server = (await this.config).server;
+        if(!server){
+            throw new Error("http server not found");
+        }
         return new Promise<boolean>((resolve) => {
-            server.listen(config.port,config.hostname,() => {
+            server.listen(params.port,params.hostname,() => {
                 resolve(true);
             })
         })
     }
+
     async close(): Promise<boolean> {
+        const io = (await this.config).io;
+        if(!io){
+            throw new Error("socket.io server not found");
+        }
         return new Promise<boolean>((resolve,reject) => {
-            if(!this.io){
+            if(!io){
                 return resolve(true);
             }
-            this.io.sockets.sockets.forEach((socket) => {
+            if(this.closed){
+                return resolve(true);
+            }
+            this.closed = true;
+            io.sockets.sockets.forEach((socket) => {
                 socket.disconnect();
             })
-            this.io.close((err) => {
+            io.close((err) => {
                 if(err){
                     reject(err);
                 }
                 resolve(true);
             })
-            this.io = null;
         })
     }
 
-    async connect(target: string,path?:string): Promise<TypedRPCConnection> {
+    async connect(target: string): Promise<TypedRPCConnection> {
         const SocketIOClientModule = await import("socket.io-client").catch(() => null);
         if(!SocketIOClientModule){
             throw new Error("socket.io-client module not found,try to use npm install socket.io-client");
         }
-        return new Promise<TypedRPCConnection>((resolve,reject) => {
-            const socket = SocketIOClientModule.io(`ws://${target}${path}`);
+        return new Promise<TypedRPCConnection>(async (resolve,reject) => {
+            const socket = SocketIOClientModule.io(`ws://${target}`,{
+                ...(await this.config).options?.client,
+            });
             const connection = new TypedRPCConnectionSocketIO({
                 id:socket.id || IdMaker.makeId(),
                 send:(data) => {

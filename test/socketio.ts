@@ -26,7 +26,11 @@ const server = new TypedRPCServer({
     local:ServerAPIDefine,
     remote:ClientAPIDefine,
     connection:{
-        provider:new TypedRPCConnectionProviderSocketIO(),
+        provider:TypedRPCConnectionProviderSocketIO.createServer({
+            options:{
+                path:'/api'
+            }
+        }),
     }
 })
 
@@ -40,7 +44,11 @@ const client = new TypedRPCClient({
     local:ClientAPIDefine,
     remote:ServerAPIDefine,
     connection:{
-        provider:new TypedRPCConnectionProviderSocketIO(),
+        provider:TypedRPCConnectionProviderSocketIO.createClient({
+            options:{
+                path:'/api'
+            }
+        }),
     }
 })
 
